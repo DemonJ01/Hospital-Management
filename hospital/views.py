@@ -65,7 +65,7 @@ def doctor_signup_view(request):
             doctor.save()
             my_doctor_group = Group.objects.get_or_create(name='DOCTOR')
             my_doctor_group[0].user_set.add(user)
-            return HttpResponseRedirect('doctorlogin')
+            return redirect('doctorlogin')
     return render(request,'hospital/doctorsignup.html',context=mydict)
 
 
@@ -87,7 +87,7 @@ def patient_signup_view(request):
             patient.save()
             my_patient_group = Group.objects.get_or_create(name='PATIENT')
             my_patient_group[0].user_set.add(user)
-            return HttpResponseRedirect('patientlogin')
+            return redirect('patientlogin')
     return render(request,'hospital/patientsignup.html',context=mydict)
 
 
@@ -233,7 +233,7 @@ def admin_add_doctor_view(request):
             my_doctor_group = Group.objects.get_or_create(name='DOCTOR')
             my_doctor_group[0].user_set.add(user)
 
-        return HttpResponseRedirect('admin-view-doctor')
+        return redirect('admin-view-doctor')
     return render(request,'hospital/admin_add_doctor.html',context=mydict)
 
 
@@ -351,7 +351,7 @@ def admin_add_patient_view(request):
             my_patient_group = Group.objects.get_or_create(name='PATIENT')
             my_patient_group[0].user_set.add(user)
 
-        return HttpResponseRedirect('admin-view-patient')
+        return redirect('admin-view-patient')
     return render(request,'hospital/admin_add_patient.html',context=mydict)
 
 
@@ -523,7 +523,7 @@ def admin_add_appointment_view(request):
             appointment.patientName=models.User.objects.get(id=request.POST.get('patientId')).first_name
             appointment.status=True
             appointment.save()
-        return HttpResponseRedirect('admin-view-appointment')
+        return redirect('admin-view-appointment')
     return render(request,'hospital/admin_add_appointment.html',context=mydict)
 
 
@@ -737,7 +737,7 @@ def patient_book_appointment_view(request):
         appointment.patientName = request.user.first_name
         appointment.status = False
         appointment.save()
-        return HttpResponseRedirect('patient-view-appointment')
+        return redirect('patient-view-appointment')
     return render(request, 'hospital/patient_book_appointment.html', context=context)
 
 
