@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doctor Directory | Hospital Management</title><style>body{font-family:system-ui,Arial,sans-serif;margin:0;background:#f3f7fa;color:#1c2932;line-height:1.55}main{max-width:850px;margin:5vh auto;padding:2rem;background:white;border:1px solid #dce5ec;border-radius:12px}a{color:#125c84}nav a{margin-right:1rem}label{display:block;margin:1rem 0}input,textarea,select{display:block;width:100%;max-width:440px;padding:.6rem;border:1px solid #9cb0bd;border-radius:5px}button{background:#156b80;color:white;padding:.65rem 1.3rem;border:0;border-radius:6px;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #f6a500}ul{padding-left:1.4rem}</style></head><body><main>
+<p><a href="/">Hospital Management</a></p><h1>Doctor Directory</h1><p>Approved doctors.</p>
+
+{% if doctors %}<h2>Doctors</h2><ul>{% for item in doctors %}<li>{{ item.get_name }} — {{ item.department }}</li>{% empty %}<li>No records.</li>{% endfor %}</ul>{% endif %}
+{% if patients %}<h2>Patients</h2><ul>{% for item in patients %}<li>{{ item.get_name }}</li>{% empty %}<li>No records.</li>{% endfor %}</ul>{% endif %}
+{% if dischargedpatients %}<h2>Discharged patients</h2><ul>{% for item in dischargedpatients %}<li>{{ item.patientName }}</li>{% endfor %}</ul>{% endif %}
+{% if appointments %}<h2>Appointments</h2><ul>{% for item in appointments %}<li>{{ item }}</li>{% empty %}<li>No appointments.</li>{% endfor %}</ul>{% endif %}
+{% if is_discharged %}<p>Discharged. Total: {{ total }}</p>{% endif %}
+{% if total %}<p>Total: {{ total }}</p>{% endif %}
+{% if doctorName %}<p>Assigned doctor: {{ doctorName }}</p>{% endif %}
+</main></body></html>
