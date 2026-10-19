@@ -51,3 +51,26 @@ class TemplateSmokeTests(TestCase):
         for url in ('/doctorlogin', '/patientlogin'):
             with self.subTest(url=url):
                 self.assertContains(self.client.get(url), 'csrfmiddlewaretoken')
+
+
+class AppointmentAndSearchRegressionTests(TestCase):
+    def test_search_without_query_redirects_anonymous_user(self):
+        self.assertEqual(self.client.get('/searchdoctor').status_code, 302)
+
+    def test_admin_appointment_uses_validated_doctor_and_patient(self):
+        from hospital.models import Doctor, Patient
+        admin = User.objects.create_user('admin_test', password='example-Test123')
+        admin.groups.add(Group.objects.get_or_create(name='ADMIN')[0])
+        doctor_user = User.objects.create_user('doctor_test', first_name='Doctor', password='example-Test123')
+        patient_user = User.objects.create_user('patient_test', first_name='Patient', password='example-Test123')
+        Doctor.objects.create(user=doctor_user, address='Ward', status=True)
+        Patient.objects.create(user=patient_user, address='Ward', mobile='12345', symptoms='Checkup', status=True)
+        self.client.force_login(admin)
+        response = self.client.post('/admin-add-appointment', {
+            'doctorId': str(doctor_user.id), 'patientId': str(patient_user.id),
+            'description': 'Follow-up', 'status': 'on',
+        })
+        self.assertEqual(response.status_code, 302)
+        appointment = Appointment.objects.get()
+        self.assertEqual(appointment.doctorId, doctor_user.id)
+        self.assertEqual(appointment.patientId, patient_user.id)
