@@ -1,57 +1,61 @@
-# Hospital-Management
+# Hospital Management System
 
-Educational Django hospital workflow prototype with administrator, doctor and patient roles.
+A Django web application for managing hospital administration, doctors, patients, appointments, and discharge bills.
 
-**Current scope:** Python, Django, SQLite, Django templates, CSS, django-widget-tweaks, xhtml2pdf.
+## Features
+- Administrator, doctor, and patient roles.
+- Doctor registration and approval.
+- Patient registration, admission, and management.
+- Appointment booking and approval.
+- Patient discharge records and invoice generation.
+- Separate dashboards for different user roles.
 
-> Please review the [known limitations](docs/KNOWN_LIMITATIONS.md) before using or presenting this project. Documentation describes the implementation actually available in this repository; additional functionality is not implied.
+## Technologies
+Python, Django, SQLite, HTML, CSS, Django templates, and xhtml2pdf.
 
-## Project quick start
+## Installation
+Use Python 3.11 or a compatible version.
 
-Clone the repository, change into its directory, then execute:
-
-~~~bash
+```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
+```
+
+On Windows, activate the environment with `.venv\Scripts\activate`.
+
+## Configuration
+Set the following environment variables for local development:
+
+```bash
 export DJANGO_DEBUG=true
-export DJANGO_SECRET_KEY=local-development-only-change-this
+export DJANGO_SECRET_KEY=replace-with-a-random-development-key
+```
+
+For deployment, set `DJANGO_DEBUG=false`, a unique `DJANGO_SECRET_KEY`, and `DJANGO_ALLOWED_HOSTS` to the actual domain or host.
+
+## Run
+```bash
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
-~~~
+```
 
-The examples target a Unix-like shell. On Windows, activate the virtual environment with the Windows script and configure environment variables using PowerShell syntax where applicable.
+Open the server address shown in the terminal. Use Django's admin account for initial setup.
 
-## Validation
-
-~~~bash
-python -m compileall -q hospital hospitalmanagement projectname manage.py
+## Tests
+```bash
 python manage.py check
-python manage.py test
-~~~
+python manage.py test hospital
+```
 
-Checks require the relevant Python/Node.js dependencies and, for some functionality, external services. Continuous integration may cover a smaller subset than full manual runtime validation. See the [technical architecture guide](docs/ARCHITECTURE.md) and [test strategy](docs/TESTING.md).
+## Project Structure
+```text
+hospital/           Models, forms, views, migrations and tests
+hospitalmanagement/ Django settings and URL routes
+templates/hospital/ Web page templates
+static/             Stylesheets and images
+manage.py           Django management entry point
+```
 
-## What is implemented
-
-`hospitalmanagement/` holds the active Django project configuration and URLs. `hospital/` contains models, forms, views and historical migrations. HTML templates and `static/` provide the UI. SQLite stores application data locally. `projectname/` is retained legacy Django configuration with unverified purpose. Admin signup and invoice downloads have received targeted guards; this is not an exhaustive authorization review.
-
-## Known limitations
-
-An SQLite database and compiled Python artifacts are already in Git history; .gitignore does not erase them. Do not use real health data or deploy for clinical care. Other destructive and object-level operations need thorough authorization tests. SMTP depends on a configured provider. Legacy project configuration requires review.
-
-For more information, see [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md).
-
-## Project documentation
-
-- [Architecture](docs/ARCHITECTURE.md) — components and data flow.
-- [Testing](docs/TESTING.md) — checks, limits and manual verification.
-- [Known limitations](docs/KNOWN_LIMITATIONS.md) — outstanding risks and missing features.
-- [Contributing](CONTRIBUTING.md) — local development and pull request guidelines.
-- [Security](SECURITY.md) — privacy and vulnerability reporting guidance.
-
-## Contribution and license
-
-Please contribute through a feature branch and a reviewable pull request. Never add secrets, private data or unverifiable feature claims to commits. A repository-wide license has not been selected in this improvement pass; ownership and third-party licensing must be reviewed before publishing one.
-
+**Note:** This is a demonstration application. Do not use real patient data without completing a production security and privacy review.
