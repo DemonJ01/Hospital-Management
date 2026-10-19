@@ -36,3 +36,18 @@ class AuthorizationRegressionTests(TestCase):
         self.client.force_login(current)
         self.assertEqual(self.client.get(f'/delete-appointment/{appointment.id}').status_code, 404)
         self.assertTrue(Appointment.objects.filter(pk=appointment.pk).exists())
+
+
+class TemplateSmokeTests(TestCase):
+    """The public entry points must render without missing templates."""
+
+    def test_public_pages_render(self):
+        for url in ('/', '/doctorclick', '/patientclick', '/doctorlogin', '/patientlogin', '/doctorsignup', '/patientsignup', '/contactus'):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+
+    def test_login_pages_contain_csrf(self):
+        for url in ('/doctorlogin', '/patientlogin'):
+            with self.subTest(url=url):
+                self.assertContains(self.client.get(url), 'csrfmiddlewaretoken')
