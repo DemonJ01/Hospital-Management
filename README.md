@@ -1,50 +1,64 @@
 # Hospital Management System
-Functions
-Admin
-Signup their account. Then Login (No approval Required).
-Can register/view/approve/reject/delete doctor (approve those doctor who applied for job in their hospital).
-Can admit/view/approve/reject/discharge patient (discharge patient when treatment is done).
-Can Generate/Download Invoice pdf (Generate Invoice according to medicine cost, room charge, doctor charge and other charge).
-Can view/book/approve Appointment (approve those appointments which is requested by patient).
-Doctor
-Apply for job in hospital. Then Login (Approval required by hospital admin, Then only doctor can login).
-Can only view their patient details (symptoms, name, mobile ) assigned to that doctor by admin.
-Can view their discharged(by admin) patient list.
-Can view their Appointments, booked by admin.
-Can delete their Appointment, when doctor attended their appointment.
-Patient
-Create account for admit in hospital. Then Login (Approval required by hospital admin, Then only patient can login).
-Can view assigned doctor's details like ( specialization, mobile, address).
-Can view their booked appointment status (pending/confirmed by admin).
-Can book appointments.(approval required by admin)
-Can view/download Invoice pdf (Only when that patient is discharged by admin).
 
-HOW TO RUN THIS PROJECT
-Install Python(3.7.6) (Dont Forget to Tick Add to Path while installing Python)
-Open Terminal and Execute Following Commands :
-pip install django==4.2.7
-pip install django-widget-tweaks
-pip install xhtml2pdf
+A Django-based educational hospital-management application with separate administrative, doctor and patient experiences. Features in the source include doctor and patient registration, approval workflows, appointment management and discharge invoices.
 
-Download This Project Zip Folder and Extract it
-Move to project folder in Terminal. Then run following Commands :
-py manage.py makemigrations
-py manage.py migrate
+> **Not for real patient records or clinical operations.** This repository is a learning/demo application and has not undergone a healthcare compliance or production security audit.
 
-this is the main command for running of code after creating the environment = py manage.py runserver
+## Security notes
 
-Now enter following URL in Your Browser Installed On Your Pc
-http://127.0.0.1:8000/
+The original version exposed public administrator registration. The registration view now returns **403 Forbidden**. Create trusted administrators out-of-band using Django's `createsuperuser` command; review group-based authorization before real-world deployment. The existing committed SQLite database and historical settings may contain sensitive information. **Inspect them and rotate any real credentials; modifying current files does not erase Git history.** Do not commit private patient data.
 
-CHANGES REQUIRED FOR CONTACT US PAGE
-In settins.py file, You have to give your email and password
-EMAIL_HOST_USER = 'youremail@gmail.com'
-EMAIL_HOST_PASSWORD = 'your email password'
-EMAIL_RECEIVING_USER = 'youremail@gmail.com'
-Login to gmail through host email id in your browser and open following link and turn it ON
-https://myaccount.google.com/lesssecureapps
+The development key is intentionally insecure. Set a strong unique `DJANGO_SECRET_KEY` before deployment. Keep `DJANGO_DEBUG=false` and configure `DJANGO_ALLOWED_HOSTS`. Configure HTTPS, secure cookies, logging, backups and permission reviews before any deployment.
 
-Drawbacks/LoopHoles
-Any one can be Admin. There is no Approval required for admin account. So you can disable admin signup process and use any logic like creating superuser.
-There should be at least one doctor in hospital before admitting patient. So first add doctor.
-On update page of doctor/patient you must have to update password.
+## Local setup
+
+Install Python 3.11 or 3.12 and create a virtual environment:
+
+```bash
+git clone https://github.com/DemonJ01/Hospital-Management.git
+cd Hospital-Management
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env  # optional reference only; Django reads shell environment variables
+export DJANGO_DEBUG=true
+export DJANGO_SECRET_KEY=replace-with-a-random-local-development-key
+python -m django check
+python -m django migrate
+python -m django createsuperuser
+python -m django runserver
+```
+
+On Windows PowerShell use `$env:DJANGO_DEBUG="true"` and `$env:DJANGO_SECRET_KEY="..."` instead of `export`. **The repository has no tracked manage.py** as of this repair; Django commands above require a project entry point. This repair supplies a standard `manage.py` in the repository root.
+
+Open http://127.0.0.1:8000/ locally. Use a dedicated local test database rather than real patient records.
+
+## Project layout
+
+- `hospital/`: models, forms, views, and database migrations.
+- `hospitalmanagement/`: primary Django project settings, routes and WSGI/ASGI.
+- `projectname/`: secondary/legacy Django project configuration (retained for compatibility; review before deleting).
+- `templates/hospital/`: HTML templates.
+- `static/`: CSS, UI assets and screenshots.
+- `manage.py`: primary Django entry point.
+
+## Configuration
+
+See `.env.example`. Django reads environment variables from the process; it **does not automatically load a .env file**. Configure them in your shell or process manager. Email integration requires valid provider credentials. Google's obsolete "less secure apps" setup is **not supported**; use an approved application password or another supported SMTP provider.
+
+## Validation
+
+```bash
+python -m compileall -q hospital hospitalmanagement projectname manage.py
+python -m django check
+python -m django test
+```
+
+End-to-end functionality and security of all user journeys are **not verified** by these checks. Review account approval permissions, invoice access, destructive endpoints and personally identifiable information handling before deployment.
+
+## Known limitations
+
+- A SQLite database and Python cache artifacts remain in existing Git history. This repair does not delete historical data.
+- Security hardening is partial; administrative route and individual object-level authorization require a fuller audit.
+- The duplicated secondary Django project configuration needs manual confirmation before removal.
+- Image uploads and email require environment-specific setup.

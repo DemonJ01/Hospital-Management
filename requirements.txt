@@ -1,0 +1,4 @@
+Django>=4.2,<5.3
+django-widget-tweaks>=1.5,<2
+xhtml2pdf>=0.2.11,<1
+Pillow>=10,<12

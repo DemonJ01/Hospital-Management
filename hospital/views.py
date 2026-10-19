@@ -40,17 +40,10 @@ def patientclick_view(request):
 
 
 def admin_signup_view(request):
-    form=forms.AdminSigupForm()
-    if request.method=='POST':
-        form=forms.AdminSigupForm(request.POST)
-        if form.is_valid():
-            user=form.save()
-            user.set_password(user.password)
-            user.save()
-            my_admin_group = Group.objects.get_or_create(name='ADMIN')
-            my_admin_group[0].user_set.add(user)
-            return HttpResponseRedirect('adminlogin')
-    return render(request,'hospital/adminsignup.html',{'form':form})
+    # Never permit self-service administrator enrollment.
+    # Site administrators are provisioned with 'python manage.py createsuperuser'.
+    from django.http import HttpResponseForbidden
+    return HttpResponseForbidden('Administrator registration is disabled.')
 
 
 
@@ -469,8 +462,15 @@ def render_to_pdf(template_src, context_dict):
 
 
 
+@login_required(login_url='patientlogin')
 def download_pdf_view(request,pk):
-    dischargeDetails=models.PatientDischargeDetails.objects.all().filter(patientId=pk).order_by('-id')[:1]
+    # Only hospital administrators or the owning patient may see an invoice.
+    from django.core.exceptions import PermissionDenied
+    from django.shortcuts import get_object_or_404
+    if not (is_admin(request.user) or (is_patient(request.user) and request.user.id == pk)):
+        raise PermissionDenied("You do not have access to this invoice.")
+    details = get_object_or_404(models.PatientDischargeDetails.objects.order_by('-id'), patientId=pk)
+    dischargeDetails = [details]
     dict={
         'patientName':dischargeDetails[0].patientName,
         'assignedDoctorName':dischargeDetails[0].assignedDoctorName,

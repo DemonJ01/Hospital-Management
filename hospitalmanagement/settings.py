@@ -22,12 +22,16 @@ STATIC_DIR=os.path.join(BASE_DIR,'static')
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'hpbv()ep00boce&o0w7z1h)st148(*m@6@-rk$nn)(n9ojj4c0'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'false').lower() == 'true'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'development-only-insecure-key-change-before-deployment'
+    else:
+        raise RuntimeError('DJANGO_SECRET_KEY must be configured when DJANGO_DEBUG is false')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
 
 
 # Application definition
@@ -113,7 +117,6 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
 
 USE_TZ = True
 
@@ -125,7 +128,8 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS=[STATIC_DIR,]
 
-MEDIA_ROOT=os.path.join(BASE_DIR,'static')
+MEDIA_ROOT=os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 
 
@@ -136,11 +140,7 @@ EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'from@gmail.com' # this email will be used to send emails
-EMAIL_HOST_PASSWORD = 'xyz' # host email password required
-# now sign in with your host gmail account in your browser
-# open following link and turn it ON
-# https://myaccount.google.com/lesssecureapps
-# otherwise you will get SMTPAuthenticationError at /contactus
-# this process is required because google blocks apps authentication by default
-EMAIL_RECEIVING_USER = ['to@gmail.com'] # email on which you will receive messages sent from website
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+# Configure an appropriate mail provider and app password with environment variables.
+EMAIL_RECEIVING_USER = [address.strip() for address in os.environ.get('EMAIL_RECEIVING_USER', '').split(',') if address.strip()]
