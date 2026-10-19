@@ -725,25 +725,20 @@ def patient_appointment_view(request):
 @login_required(login_url='patientlogin')
 @user_passes_test(is_patient)
 def patient_book_appointment_view(request):
-    appointmentForm=forms.PatientAppointmentForm()
-    patient=models.Patient.objects.get(user_id=request.user.id) #for profile picture of patient in sidebar
-    message=None
-    mydict={'appointmentForm':appointmentForm,'patient':patient,'message':message}
-    if request.method=='POST':
-        appointmentForm=forms.PatientAppointmentForm(request.POST)
-        if appointmentForm.is_valid():
-                    doctor=appointmentForm.cleaned_data['doctorId']
-            
-            appointment=appointmentForm.save(commit=False)
-            appointment.doctorId=request.POST.get('doctorId')
-            appointment.patientId=request.user.id #----user can choose any patient but only their info will be stored
-            appointment.doctorName=models.User.objects.get(id=request.POST.get('doctorId')).first_name
-            appointment.patientName=request.user.first_name #----user can choose any patient but only their info will be stored
-            appointment.status=False
-            appointment.save()
+    patient = models.Patient.objects.get(user_id=request.user.id)
+    form = forms.PatientAppointmentForm(request.POST or None)
+    context = {'appointmentForm': form, 'patient': patient, 'message': None}
+    if request.method == 'POST' and form.is_valid():
+        doctor = form.cleaned_data['doctorId']
+        appointment = form.save(commit=False)
+        appointment.doctorId = doctor.user_id
+        appointment.patientId = request.user.id
+        appointment.doctorName = doctor.user.first_name
+        appointment.patientName = request.user.first_name
+        appointment.status = False
+        appointment.save()
         return HttpResponseRedirect('patient-view-appointment')
-    return render(request,'hospital/patient_book_appointment.html',context=mydict)
-
+    return render(request, 'hospital/patient_book_appointment.html', context=context)
 
 
 @login_required(login_url='patientlogin')
