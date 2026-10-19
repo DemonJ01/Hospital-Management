@@ -74,3 +74,10 @@ class AppointmentAndSearchRegressionTests(TestCase):
         appointment = Appointment.objects.get()
         self.assertEqual(appointment.doctorId, doctor_user.id)
         self.assertEqual(appointment.patientId, patient_user.id)
+
+
+class SuperuserAccessTests(TestCase):
+    def test_superuser_has_administrator_access_without_admin_group(self):
+        superuser = User.objects.create_superuser('chief_admin', 'chief@example.invalid', 'secure-Test123')
+        self.client.force_login(superuser)
+        self.assertEqual(self.client.get('/admin-dashboard').status_code, 200)
