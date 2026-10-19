@@ -81,3 +81,15 @@ class SuperuserAccessTests(TestCase):
         superuser = User.objects.create_superuser('chief_admin', 'chief@example.invalid', 'secure-Test123')
         self.client.force_login(superuser)
         self.assertEqual(self.client.get('/admin-dashboard').status_code, 200)
+
+
+class PostOnlyMutationTests(TestCase):
+    def test_approval_and_deletion_routes_reject_get(self):
+        admin = User.objects.create_superuser('workflow_admin', 'admin@example.invalid', 'secure-Test123')
+        self.client.force_login(admin)
+        urls = ['/approve-doctor/1', '/reject-doctor/1', '/approve-patient/1',
+                '/reject-patient/1', '/approve-appointment/1', '/reject-appointment/1',
+                '/delete-doctor-from-hospital/1', '/delete-patient-from-hospital/1']
+        for url in urls:
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 405)
