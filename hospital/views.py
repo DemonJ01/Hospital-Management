@@ -61,10 +61,11 @@ def doctor_signup_view(request):
             user.save()
             doctor=doctorForm.save(commit=False)
             doctor.user=user
-            doctor=doctor.save()
+            doctor.status=False  # Enrollment never grants approval.
+            doctor.save()
             my_doctor_group = Group.objects.get_or_create(name='DOCTOR')
             my_doctor_group[0].user_set.add(user)
-        return HttpResponseRedirect('doctorlogin')
+            return HttpResponseRedirect('doctorlogin')
     return render(request,'hospital/doctorsignup.html',context=mydict)
 
 
@@ -81,11 +82,12 @@ def patient_signup_view(request):
             user.save()
             patient=patientForm.save(commit=False)
             patient.user=user
-            patient.assignedDoctorId=request.POST.get('assignedDoctorId')
-            patient=patient.save()
+            patient.status=False  # Enrollment never grants approval.
+            patient.assignedDoctorId=patientForm.cleaned_data['assignedDoctorId'].user_id
+            patient.save()
             my_patient_group = Group.objects.get_or_create(name='PATIENT')
             my_patient_group[0].user_set.add(user)
-        return HttpResponseRedirect('patientlogin')
+            return HttpResponseRedirect('patientlogin')
     return render(request,'hospital/patientsignup.html',context=mydict)
 
 
@@ -467,7 +469,7 @@ def download_pdf_view(request,pk):
     # Only hospital administrators or the owning patient may see an invoice.
     from django.core.exceptions import PermissionDenied
     from django.shortcuts import get_object_or_404
-    if not (is_admin(request.user) or (is_patient(request.user) and request.user.id == pk)):
+    if not (is_admin(request.user) or (is_patient(request.user) and models.Patient.objects.filter(id=pk, user_id=request.user.id).exists())):
         raise PermissionDenied("You do not have access to this invoice.")
     details = get_object_or_404(models.PatientDischargeDetails.objects.order_by('-id'), patientId=pk)
     dischargeDetails = [details]
@@ -515,9 +517,9 @@ def admin_add_appointment_view(request):
         appointmentForm=forms.AppointmentForm(request.POST)
         if appointmentForm.is_valid():
             appointment=appointmentForm.save(commit=False)
-            appointment.doctorId=request.POST.get('doctorId')
+            appointment.doctorId=doctor.user_id
             appointment.patientId=request.POST.get('patientId')
-            appointment.doctorName=models.User.objects.get(id=request.POST.get('doctorId')).first_name
+            appointment.doctorName=doctor.user.first_name
             appointment.patientName=models.User.objects.get(id=request.POST.get('patientId')).first_name
             appointment.status=True
             appointment.save()
@@ -614,7 +616,7 @@ def doctor_view_patient_view(request):
 def search_view(request):
     doctor=models.Doctor.objects.get(user_id=request.user.id) #for profile picture of doctor in sidebar
     # whatever user write in search box we get in query
-    query = request.GET['query']
+    query = request.GET.get('query', '').strip()[:100]
     patients=models.Patient.objects.all().filter(status=True,assignedDoctorId=request.user.id).filter(Q(symptoms__icontains=query)|Q(user__first_name__icontains=query))
     return render(request,'hospital/doctor_view_patient.html',{'patients':patients,'doctor':doctor})
 
@@ -668,7 +670,8 @@ def doctor_delete_appointment_view(request):
 @login_required(login_url='doctorlogin')
 @user_passes_test(is_doctor)
 def delete_appointment_view(request,pk):
-    appointment=models.Appointment.objects.get(id=pk)
+    from django.shortcuts import get_object_or_404
+    appointment=get_object_or_404(models.Appointment, id=pk, doctorId=request.user.id)
     appointment.delete()
     doctor=models.Doctor.objects.get(user_id=request.user.id) #for profile picture of doctor in sidebar
     appointments=models.Appointment.objects.all().filter(status=True,doctorId=request.user.id)
@@ -729,10 +732,7 @@ def patient_book_appointment_view(request):
     if request.method=='POST':
         appointmentForm=forms.PatientAppointmentForm(request.POST)
         if appointmentForm.is_valid():
-            print(request.POST.get('doctorId'))
-            desc=request.POST.get('description')
-
-            doctor=models.Doctor.objects.get(user_id=request.POST.get('doctorId'))
+                    doctor=appointmentForm.cleaned_data['doctorId']
             
             appointment=appointmentForm.save(commit=False)
             appointment.doctorId=request.POST.get('doctorId')
@@ -746,6 +746,8 @@ def patient_book_appointment_view(request):
 
 
 
+@login_required(login_url='patientlogin')
+@user_passes_test(is_patient)
 def patient_view_doctor_view(request):
     doctors=models.Doctor.objects.all().filter(status=True)
     patient=models.Patient.objects.get(user_id=request.user.id) #for profile picture of patient in sidebar
@@ -753,6 +755,8 @@ def patient_view_doctor_view(request):
 
 
 
+@login_required(login_url='patientlogin')
+@user_passes_test(is_patient)
 def search_doctor_view(request):
     patient=models.Patient.objects.get(user_id=request.user.id) #for profile picture of patient in sidebar
     
@@ -777,7 +781,7 @@ def patient_view_appointment_view(request):
 @user_passes_test(is_patient)
 def patient_discharge_view(request):
     patient=models.Patient.objects.get(user_id=request.user.id) #for profile picture of patient in sidebar
-    dischargeDetails=models.PatientDischargeDetails.objects.all().filter(patientId=patient.id).order_by('-id')[:1]
+    dischargeDetails=models.PatientDischargeDetails.objects.filter(patientId=patient.id).order_by('-id')[:1]
     patientDict=None
     if dischargeDetails:
         patientDict ={
@@ -798,7 +802,6 @@ def patient_discharge_view(request):
         'OtherCharge':dischargeDetails[0].OtherCharge,
         'total':dischargeDetails[0].total,
         }
-        print(patientDict)
     else:
         patientDict={
             'is_discharged':False,
