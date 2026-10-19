@@ -31,7 +31,9 @@ if not SECRET_KEY:
         raise RuntimeError('DJANGO_SECRET_KEY must be configured when DJANGO_DEBUG is false')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if host.strip()]
+if not DEBUG and not ALLOWED_HOSTS:
+    raise RuntimeError('DJANGO_ALLOWED_HOSTS must be configured when DJANGO_DEBUG is false')
 
 
 # Application definition
