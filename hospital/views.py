@@ -40,17 +40,10 @@ def patientclick_view(request):
 
 
 def admin_signup_view(request):
-    form=forms.AdminSigupForm()
-    if request.method=='POST':
-        form=forms.AdminSigupForm(request.POST)
-        if form.is_valid():
-            user=form.save()
-            user.set_password(user.password)
-            user.save()
-            my_admin_group = Group.objects.get_or_create(name='ADMIN')
-            my_admin_group[0].user_set.add(user)
-            return HttpResponseRedirect('adminlogin')
-    return render(request,'hospital/adminsignup.html',{'form':form})
+    # Never permit self-service administrator enrollment.
+    # Site administrators are provisioned with 'python manage.py createsuperuser'.
+    from django.http import HttpResponseForbidden
+    return HttpResponseForbidden('Administrator registration is disabled.')
 
 
 
