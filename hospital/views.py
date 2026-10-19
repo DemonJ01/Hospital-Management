@@ -462,8 +462,15 @@ def render_to_pdf(template_src, context_dict):
 
 
 
+@login_required(login_url='patientlogin')
 def download_pdf_view(request,pk):
-    dischargeDetails=models.PatientDischargeDetails.objects.all().filter(patientId=pk).order_by('-id')[:1]
+    # Only hospital administrators or the owning patient may see an invoice.
+    from django.core.exceptions import PermissionDenied
+    from django.shortcuts import get_object_or_404
+    if not (is_admin(request.user) or (is_patient(request.user) and request.user.id == pk)):
+        raise PermissionDenied("You do not have access to this invoice.")
+    details = get_object_or_404(models.PatientDischargeDetails.objects.order_by('-id'), patientId=pk)
+    dischargeDetails = [details]
     dict={
         'patientName':dischargeDetails[0].patientName,
         'assignedDoctorName':dischargeDetails[0].assignedDoctorName,
