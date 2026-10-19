@@ -1,3 +1,4 @@
+from django.views.decorators.http import require_POST
 from django.shortcuts import render,redirect,reverse
 from . import forms,models
 from django.db.models import Sum
@@ -177,6 +178,7 @@ def admin_view_doctor_view(request):
 
 @login_required(login_url='/adminlogin')
 @user_passes_test(is_admin)
+@require_POST
 def delete_doctor_from_hospital_view(request,pk):
     doctor=models.Doctor.objects.get(id=pk)
     user=models.User.objects.get(id=doctor.user_id)
@@ -249,6 +251,7 @@ def admin_approve_doctor_view(request):
 
 @login_required(login_url='/adminlogin')
 @user_passes_test(is_admin)
+@require_POST
 def approve_doctor_view(request,pk):
     doctor=models.Doctor.objects.get(id=pk)
     doctor.status=True
@@ -258,6 +261,7 @@ def approve_doctor_view(request,pk):
 
 @login_required(login_url='/adminlogin')
 @user_passes_test(is_admin)
+@require_POST
 def reject_doctor_view(request,pk):
     doctor=models.Doctor.objects.get(id=pk)
     user=models.User.objects.get(id=doctor.user_id)
@@ -292,6 +296,7 @@ def admin_view_patient_view(request):
 
 @login_required(login_url='/adminlogin')
 @user_passes_test(is_admin)
+@require_POST
 def delete_patient_from_hospital_view(request,pk):
     patient=models.Patient.objects.get(id=pk)
     user=models.User.objects.get(id=patient.user_id)
@@ -368,6 +373,7 @@ def admin_approve_patient_view(request):
 
 @login_required(login_url='/adminlogin')
 @user_passes_test(is_admin)
+@require_POST
 def approve_patient_view(request,pk):
     patient=models.Patient.objects.get(id=pk)
     patient.status=True
@@ -378,6 +384,7 @@ def approve_patient_view(request,pk):
 
 @login_required(login_url='/adminlogin')
 @user_passes_test(is_admin)
+@require_POST
 def reject_patient_view(request,pk):
     patient=models.Patient.objects.get(id=pk)
     user=models.User.objects.get(id=patient.user_id)
@@ -541,6 +548,7 @@ def admin_approve_appointment_view(request):
 
 @login_required(login_url='/adminlogin')
 @user_passes_test(is_admin)
+@require_POST
 def approve_appointment_view(request,pk):
     appointment=models.Appointment.objects.get(id=pk)
     appointment.status=True
@@ -551,6 +559,7 @@ def approve_appointment_view(request,pk):
 
 @login_required(login_url='/adminlogin')
 @user_passes_test(is_admin)
+@require_POST
 def reject_appointment_view(request,pk):
     appointment=models.Appointment.objects.get(id=pk)
     appointment.delete()
@@ -671,6 +680,7 @@ def doctor_delete_appointment_view(request):
 
 @login_required(login_url='/doctorlogin')
 @user_passes_test(is_doctor)
+@require_POST
 def delete_appointment_view(request,pk):
     from django.shortcuts import get_object_or_404
     appointment=get_object_or_404(models.Appointment, id=pk, doctorId=request.user.id)
