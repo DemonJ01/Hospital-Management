@@ -516,11 +516,13 @@ def admin_add_appointment_view(request):
     if request.method=='POST':
         appointmentForm=forms.AppointmentForm(request.POST)
         if appointmentForm.is_valid():
+            doctor=appointmentForm.cleaned_data['doctorId']
+            patient=appointmentForm.cleaned_data['patientId']
             appointment=appointmentForm.save(commit=False)
             appointment.doctorId=doctor.user_id
-            appointment.patientId=request.POST.get('patientId')
+            appointment.patientId=patient.user_id
             appointment.doctorName=doctor.user.first_name
-            appointment.patientName=models.User.objects.get(id=request.POST.get('patientId')).first_name
+            appointment.patientName=patient.user.first_name
             appointment.status=True
             appointment.save()
         return redirect('admin-view-appointment')
@@ -756,7 +758,7 @@ def search_doctor_view(request):
     patient=models.Patient.objects.get(user_id=request.user.id) #for profile picture of patient in sidebar
     
     # whatever user write in search box we get in query
-    query = request.GET['query']
+    query = request.GET.get('query', '').strip()[:100]
     doctors=models.Doctor.objects.all().filter(status=True).filter(Q(department__icontains=query)| Q(user__first_name__icontains=query))
     return render(request,'hospital/patient_view_doctor.html',{'patient':patient,'doctors':doctors})
 
